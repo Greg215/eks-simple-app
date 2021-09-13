@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-tr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:
+        hello-tr
+  template:
+    metadata:
+      labels:
+        app: hello-tr
+    spec:
+      containers:
+      - name: hello-tr
+        image: 898846401548.dkr.ecr.eu-central-1.amazonaws.com/simple-tr:latest
+        ports:
+          - containerPort: 80
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hello-tr
+spec:
+  type: NodePort
+  selector:
+    app: hello-tr
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-tr
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+  namespace: hello-tr
+spec:
+  rules:
+    - host: "hello.dns"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hello-tr
+                port:
+                  number: 80
